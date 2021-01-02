@@ -6,10 +6,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # Auth
-    path('signup/', views.signupuser, name='signupuser'),
-    path('logout/', views.logoutuser, name='logoutuser'),
-    path('login/', views.loginuser, name='loginuser'),
+    path('signup/', views.signupUser, name='signupUser'),
+    path('logout/', views.logoutUser, name='logoutUser'),
+    path('login/', views.loginUser, name='loginUser'),
     # Todos
     path('', views.home, name='home'),
-    path('current/', views.currenttodos, name='currenttodos'),
+    path('create/', views.createTodo, name='createTodo'),
+    path('current/', views.currentTodos, name='currentTodos'),
 ]
