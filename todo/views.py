@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.contrib.auth import login, logout, authenticate
@@ -42,12 +43,14 @@ def loginUser(request):
             return redirect('currentTodos')
 
 
+@login_required
 def logoutUser(request):
     if request.method == 'POST':
         logout(request)
         return redirect('home')
 
 
+@login_required
 def createTodo(request):
     if request.method == 'GET':
         return render(request, 'todo/createTodo.html', {'form': TodoForm()})
@@ -62,11 +65,19 @@ def createTodo(request):
             return render(request, 'todo/createTodo.html', {'form': TodoForm(), 'error': 'Bad data passed in. Try again.'})
 
 
+@login_required
 def currentTodos(request):
     todos = Todo.objects.filter(user=request.user, date_completed__isnull=True)
     return render(request, 'todo/currentTodos.html', {'todos': todos})
 
 
+@login_required
+def completedTodos(request):
+    todos = Todo.objects.filter(user=request.user, date_completed__isnull=False).order_by('-date_completed')
+    return render(request, 'todo/completedTodos.html', {'todos': todos})
+
+
+@login_required
 def viewTodo(request, todo_pk):
     todo = get_object_or_404(Todo, pk=todo_pk, user=request.user)
     if request.method == 'GET':
@@ -81,6 +92,7 @@ def viewTodo(request, todo_pk):
             return render(request, 'todo/viewTodo.html', {'todo': todo, 'error': 'Bad info.'})
 
 
+@login_required
 def completeTodo(request, todo_pk):
     todo = get_object_or_404(Todo, pk=todo_pk, user=request.user)
     if request.method == 'POST':
@@ -89,8 +101,13 @@ def completeTodo(request, todo_pk):
         return redirect('currentTodos')
 
 
+@login_required
 def deleteTodo(request, todo_pk):
     todo = get_object_or_404(Todo, pk=todo_pk, user=request.user)
     if request.method == 'POST':
-        todo.delete()
-        return redirect('currentTodos')
+        if todo.date_completed:
+            todo.delete()
+            return redirect('completedTodos')
+        else:
+            todo.delete()
+            return redirect('currentTodos')
