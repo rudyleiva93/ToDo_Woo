@@ -5,6 +5,7 @@ from django.db import IntegrityError
 from django.contrib.auth import login, logout, authenticate
 from .forms import TodoForm
 from .models import Todo
+from django.utils import timezone
 
 
 def home(request):
@@ -78,3 +79,18 @@ def viewTodo(request, todo_pk):
             return redirect('currentTodos')
         except ValueError:
             return render(request, 'todo/viewTodo.html', {'todo': todo, 'error': 'Bad info.'})
+
+
+def completeTodo(request, todo_pk):
+    todo = get_object_or_404(Todo, pk=todo_pk, user=request.user)
+    if request.method == 'POST':
+        todo.date_completed = timezone.now()
+        todo.save()
+        return redirect('currentTodos')
+
+
+def deleteTodo(request, todo_pk):
+    todo = get_object_or_404(Todo, pk=todo_pk, user=request.user)
+    if request.method == 'POST':
+        todo.delete()
+        return redirect('currentTodos')
